@@ -32,7 +32,7 @@ router.post('/users', async (req, res) => {
     const { body } = req;
     // throw new Error("hbdfsbhjksdfkjbsdf");
     const { name, about, avatar } = body;
-    if (name.length >= 2 && name.length <= 30 && about.length >= 2 && about.length <= 30) {
+    if (name && name.length >= 2 && name.length <= 30 && about && about.length >= 2 && about.length <= 30 && avatar && /https?:\/\/[^\s]/gi.test(avatar)) {
       const newUser = new User({ name, about, avatar });
       await newUser.save();
       res.status(OK_CODE).json(newUser);

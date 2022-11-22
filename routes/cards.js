@@ -15,7 +15,7 @@ router.post('/cards', async (req, res) => {
   try {
     const { body, user } = req;
     const { name, link } = body;
-    if (name.length >= 2 && name.length <= 30 && /https?:\/\/[^\s]/gi.test(link)) {
+    if (name && name.length >= 2 && name.length <= 30 && /https?:\/\/[^\s]/gi.test(link)) {
       const newCard = new Card({ name, link, owner: user._id });
       await newCard.save();
       res.status(OK_CODE).json(newCard);
