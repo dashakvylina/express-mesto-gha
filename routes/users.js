@@ -14,16 +14,17 @@ router.get('/users', async (req, res) => {
 router.get('/users/:userId', async (req, res) => {
   try {
     const { userId } = req.params;
-
     const result = await User.findById(userId);
-
     if (result === null) {
       res.status(NOT_FOUND_ERROR_CODE).json({ message: 'user not found' });
     } else {
       res.status(OK_CODE).json(result);
     }
   } catch (error) {
-    res.status(DEFAULT_ERROR_CODE).json({ message: error.message });
+    if (error.name === 'CastError') {
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
+      res.status(DEFAULT_ERROR_CODE).json(error);
+    }
   }
 });
 

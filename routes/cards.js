@@ -34,7 +34,7 @@ router.delete('/cards/:cardId', async (req, res) => {
     if (result === null) {
       res.status(NOT_FOUND_ERROR_CODE).json({ message: 'card not found' });
     } else if (result.deletedCount === 0) {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
+      res.status(NOT_FOUND_ERROR_CODE).json({ message: 'card id not found' });
     } else {
       res.status(OK_CODE).json(result);
     }
