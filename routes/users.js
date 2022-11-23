@@ -47,7 +47,7 @@ router.post('/users', async (req, res) => {
 router.patch('/users/me', async (req, res) => {
   try {
     const { name, about } = req.body;
-    if (name.length >= 2 && name.length <= 30 && about.length >= 2 && about.length <= 30) {
+    if (name && name.length >= 2 && name.length <= 30 && about && about.length >= 2 && about.length <= 30) {
       const result = await User.findOneAndUpdate(
         { _id: req.user._id },
         { $set: { name, about } },
