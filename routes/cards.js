@@ -33,11 +33,17 @@ router.delete('/cards/:cardId', async (req, res) => {
     const result = await Card.deleteOne({ _id: cardId });
     if (result === null) {
       res.status(NOT_FOUND_ERROR_CODE).json({ message: 'card not found' });
+    } else if (result.deletedCount === 0) {
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
     } else {
       res.status(OK_CODE).json(result);
     }
   } catch (error) {
-    res.status(DEFAULT_ERROR_CODE).json({ message: error.message });
+    if (error.name === 'CastError') {
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
+    } else {
+      res.status(DEFAULT_ERROR_CODE).json({ message: error.message });
+    }
   }
 });
 
@@ -59,7 +65,11 @@ router.put('/cards/:cardId/likes', async (req, res) => {
       res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
     }
   } catch (error) {
-    res.status(DEFAULT_ERROR_CODE).json({ message: error.message });
+    if (error.name === 'CastError') {
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
+    } else {
+      res.status(DEFAULT_ERROR_CODE).json({ message: error.message });
+    }
   }
 });
 
@@ -81,7 +91,11 @@ router.delete('/cards/:cardId/likes', async (req, res) => {
       res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
     }
   } catch (error) {
-    res.status(DEFAULT_ERROR_CODE).json({ message: error.message });
+    if (error.name === 'CastError') {
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
+    } else {
+      res.status(DEFAULT_ERROR_CODE).json({ message: error.message });
+    }
   }
 });
 
