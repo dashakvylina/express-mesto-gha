@@ -23,8 +23,10 @@ app.use((req, res, next) => {
 app.use('/', CardRouter);
 app.use('/', UserRouter);
 
-app.get('*', function (req, res) {
-  res.status(NOT_FOUND_ERROR_CODE).json({ message: "Такой страницы не существует!" });
+app.use((req, res) => {
+  res.status(NOT_FOUND_ERROR_CODE).json({
+    message: 'Такой страницы не существует!',
+  });
 });
 
 app.listen(PORT, () => {
