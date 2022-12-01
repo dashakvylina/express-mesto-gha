@@ -49,15 +49,15 @@ router.post('/users', async (req, res) => {
 
 router.patch('/users/me', async (req, res) => {
   try {
-    const { name, about } = req.body;
+    const { name, about, avatar } = req.body;
     const result = await user.findOneAndUpdate(
       { _id: req.user._id },
-      { $set: { name, about } },
+      { $set: { name, about, avatar } },
       { new: true },
     );
 
     if (result === null) {
-      res.status(NOT_FOUND_ERROR_CODE).json({ message: 'user not found' });
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'user data not valid' });
     } else {
       res.status(OK_CODE).json(result);
     }
