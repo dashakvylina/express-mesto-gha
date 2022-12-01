@@ -57,7 +57,7 @@ router.patch('/users/me', async (req, res) => {
     );
 
     if (result === null) {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'user data not valid' });
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'user data is not valid' });
     } else {
       res.status(OK_CODE).json(result);
     }
