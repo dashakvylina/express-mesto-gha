@@ -15,7 +15,7 @@ app.use(bodyParser.json()); // для собирания JSON-формата
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use((req, res, next) => {
   req.user = {
-    _id: '63779f810ee7424c22d179fa'
+    _id: '63779f810ee7424c22d179fa',
   };
   next();
 });
@@ -30,5 +30,6 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
+  // eslint-disable-next-line no-console
   console.log('Server is running');
 });
