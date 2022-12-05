@@ -3,7 +3,7 @@ const mongoose = require('mongoose');
 const bodyParser = require('body-parser');
 const CardRouter = require('./routes/cards');
 const UserRouter = require('./routes/users');
-const { NOT_FOUND_ERROR_CODE } = require('./routes/codes');
+const { NOT_FOUND_ERROR_CODE } = require('./constants');
 
 const { PORT = 3000 } = process.env;
 
@@ -11,11 +11,11 @@ const app = express();
 
 mongoose.connect('mongodb://localhost:27017/mestodb');
 
-app.use(bodyParser.json()); // для собирания JSON-формата
+app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: true }));
 app.use((req, res, next) => {
   req.user = {
-    _id: '63779f810ee7424c22d179fa',
+    _id: '638e5d07bcebfe0ec332dba0',
   };
   next();
 });
@@ -30,6 +30,5 @@ app.use((req, res) => {
 });
 
 app.listen(PORT, () => {
-  // eslint-disable-next-line no-console
   console.log('Server is running');
 });
