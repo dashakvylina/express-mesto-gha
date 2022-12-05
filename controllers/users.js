@@ -65,7 +65,6 @@ const updateUser = async (req, res) => {
 const updateAvatar = async (req, res) => {
   try {
     const { avatar } = req.body;
-    // if (/https?:\/\/[^\s]/gi.test(avatar)) {
     const result = await user.findOneAndUpdate(
       { _id: req.user._id },
       { $set: { avatar } },
@@ -76,9 +75,6 @@ const updateAvatar = async (req, res) => {
     } else {
       res.status(OK_CODE).json(result);
     }
-    // } else {
-    //   res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'Avatar is not vallid' });
-    // }
   } catch (error) {
     res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
   }
