@@ -50,7 +50,7 @@ const updateUser = async (req, res) => {
     const result = await User.findOneAndUpdate(
       { _id: req.user._id },
       { name, about },
-      { new: true },
+      { new: true, runValidators: true },
     );
     if (result === null) {
       res.status(NOT_FOUND_ERROR_CODE).json({ message: 'user not found' });
@@ -58,7 +58,13 @@ const updateUser = async (req, res) => {
       res.status(OK_CODE).json(result);
     }
   } catch (error) {
-    res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+    if (error.name === 'ValidationError') {
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'Name or about are not vallid' });
+    } else if (error.name === 'CastError') {
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'Invalid id' });
+    } else {
+      res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+    }
   }
 };
 
@@ -68,7 +74,7 @@ const updateAvatar = async (req, res) => {
     const result = await User.findOneAndUpdate(
       { _id: req.user._id },
       { avatar },
-      { new: true },
+      { new: true, runValidators: true },
     );
     if (result === null) {
       res.status(NOT_FOUND_ERROR_CODE).json({ message: 'user not found' });
@@ -76,7 +82,13 @@ const updateAvatar = async (req, res) => {
       res.status(OK_CODE).json(result);
     }
   } catch (error) {
-    res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+    if (error.name === 'ValidationError') {
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'Name or about are not vallid' });
+    } else if (error.name === 'CastError') {
+      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'Invalid id' });
+    } else {
+      res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+    }
   }
 };
 
