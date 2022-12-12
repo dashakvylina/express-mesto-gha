@@ -8,6 +8,7 @@ const UserRouter = require('./routes/users');
 const { NOT_FOUND_ERROR_CODE } = require('./constants');
 const { createUser, login } = require('./controllers/users');
 const { auth } = require('./middlewares/auth');
+const { NotFoundError } = require('./errors');
 
 const { PORT = 3000 } = process.env;
 
@@ -43,14 +44,12 @@ app.post('/signin', celebrate({
 //   }).unknown(),
 // }));
 
+app.use((req, res, next) => {
+  next(new NotFoundError('Такой страницы не существует!'))
+});
+
 app.use('/', auth, CardRouter);
 app.use('/', auth, UserRouter);
-
-app.use((req, res) => {
-  res.status(NOT_FOUND_ERROR_CODE).json({
-    message: 'Такой страницы не существует!',
-  });
-});
 
 app.use(errors());
 

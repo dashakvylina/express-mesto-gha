@@ -75,6 +75,7 @@ const updateUser = async (req, res, next) => {
       res.status(200).json(result);
     }
   } catch (error) {
+
     if (error.name === 'ValidationError') {
       next(new BadRequestError(('Name or about are not vallid')));
     } else if (error.name === 'CastError') {
@@ -100,7 +101,7 @@ const getUserById = async (req, res, next) => {
     if (error.name === 'CastError') {
       next(new BadRequestError('User id is not valid'));
     } else {
-      next(new DefaultError('Unknown error1'));
+      next(error);
     }
   }
 };

@@ -6,6 +6,7 @@ const {
   BadRequestError,
   DefaultError,
   NotFoundError,
+  ForbiddenError
 } = require('../errors');
 
 const getCards = async (req, res, next) => {
@@ -38,9 +39,9 @@ const deleteCard = async (req, res, next) => {
     const { cardId } = req.params;
 
     const { user } = req;
-    const result = await Card.findByIdAndDelete({ _id: cardId, owner: user._id });
+    const result = await Card.findOneAndRemove({ _id: cardId, owner: user._id });
     if (result === null) {
-      throw new NotFoundError('Card not found');
+      throw new ForbiddenError('Card not found');
     } else {
       res.status(OK_CODE).json(result);
     }
@@ -48,7 +49,7 @@ const deleteCard = async (req, res, next) => {
     if (error.name === 'CastError') {
       next(new BadRequestError('Card id is not valid'));
     } else {
-      next(new DefaultError('Unknown error'));
+      next(error);
     }
   }
 };
