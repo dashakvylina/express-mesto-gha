@@ -1,50 +1,63 @@
+const bcrypt = require('bcryptjs');
+const jwt = require('jsonwebtoken');
 const User = require('../models/user');
+const { OK_CODE } = require('../constants');
 const {
-  DEFAULT_ERROR_CODE, NOT_FOUND_ERROR_CODE, BAD_REQUEST_ERROR_CODE, OK_CODE,
-} = require('../constants');
+  BadRequestError,
+  DefaultError,
+  NotFoundError,
+  UnauthorizedError,
+  ConflictError,
+} = require('../errors');
 
-const getUsers = async (req, res) => {
+const getUsers = async (req, res, next) => {
   try {
     const users = await User.find();
     res.status(OK_CODE).json(users);
   } catch (error) {
-    res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+    next(new DefaultError('Unknown error'));
   }
 };
 
-const getUser = async (req, res) => {
+const getMe = async (req, res, next) => {
   try {
-    const { userId } = req.params;
-    const result = await User.findById(userId);
+    const { user } = req;
+    const result = await User.findById(user._id);
     if (result === null) {
-      res.status(NOT_FOUND_ERROR_CODE).json({ message: 'user not found' });
+      throw new NotFoundError('user not found');
     } else {
       res.status(OK_CODE).json(result);
     }
   } catch (error) {
     if (error.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
-    } else { res.status(DEFAULT_ERROR_CODE).json(error); }
-  }
-};
-
-const createUser = async (req, res) => {
-  try {
-    const { body } = req;
-    const { name, about, avatar } = body;
-    const newUser = new User({ name, about, avatar });
-    await newUser.save();
-    res.status(OK_CODE).json(newUser);
-  } catch (error) {
-    if (error.name === 'ValidationError') {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'Name, about or avatar are not vallid' });
+      next(new BadRequestError('Unknown error'));
     } else {
-      res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+      next(new DefaultError('Unknown error'));
     }
   }
 };
 
-const updateUser = async (req, res) => {
+const createUser = async (req, res, next) => {
+  try {
+    const { body } = req;
+    const { email, password } = body;
+    const hash = await bcrypt.hash(password, 10);
+    const newUser = new User({ email, password: hash });
+    await newUser.save();
+    res.status(OK_CODE).json(newUser);
+  } catch (error) {
+    if (error.code === 11000) {
+      next(new ConflictError('Email exists'));
+    }
+    if (error.name === 'ValidationError') {
+      next(new BadRequestError('Email or password are not vallid'));
+    } else {
+      next(new DefaultError('Unknown error'));
+    }
+  }
+};
+
+const updateUser = async (req, res, next) => {
   try {
     const { name, about } = req.body;
     const result = await User.findOneAndUpdate(
@@ -53,45 +66,61 @@ const updateUser = async (req, res) => {
       { new: true, runValidators: true },
     );
     if (result === null) {
-      res.status(NOT_FOUND_ERROR_CODE).json({ message: 'user not found' });
+      throw new NotFoundError('user not found');
     } else {
-      res.status(OK_CODE).json(result);
+      res.status(200).json(result);
     }
   } catch (error) {
     if (error.name === 'ValidationError') {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'Name or about are not vallid' });
+      next(new BadRequestError(('Name or about are not vallid')));
     } else if (error.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'Invalid id' });
+      next(new BadRequestError(('Invalid id')));
     } else {
-      res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+      next(new DefaultError(('Unknown error')));
     }
   }
 };
 
-const updateAvatar = async (req, res) => {
+const updateAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
+
     const result = await User.findOneAndUpdate(
       { _id: req.user._id },
       { avatar },
-      { new: true, runValidators: true },
+      { new: true },
     );
+
     if (result === null) {
-      res.status(NOT_FOUND_ERROR_CODE).json({ message: 'user not found' });
+      throw new NotFoundError('user not found');
     } else {
-      res.status(OK_CODE).json(result);
+      res.status(200).json(result);
     }
   } catch (error) {
+    console.log('error', error);
     if (error.name === 'ValidationError') {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'Name or about are not vallid' });
+      next(new BadRequestError(('Name or about are not vallid')));
     } else if (error.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'Invalid id' });
+      next(new BadRequestError(('Invalid id')));
     } else {
-      res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+      next(new DefaultError(('Unknown error')));
     }
   }
 };
 
+const login = (req, res, next) => {
+  const { email, password } = req.body;
+
+  return User.findUserByCredentials(email, password)
+    .then((user) => {
+      const token = jwt.sign({ _id: user._id }, 'some-secret-key', { expiresIn: '7d' });
+      res.send({ token }); // аутентификация успешна! пользователь в переменной user
+    })
+    .catch(() => {
+      next(new UnauthorizedError(('Auth error')));
+    });
+};
+
 module.exports = {
-  getUsers, getUser, createUser, updateUser, updateAvatar,
+  getUsers, getMe, createUser, updateUser, updateAvatar, login,
 };

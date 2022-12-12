@@ -1,18 +1,23 @@
 const Card = require('../models/card');
 const {
-  DEFAULT_ERROR_CODE, NOT_FOUND_ERROR_CODE, BAD_REQUEST_ERROR_CODE, OK_CODE,
+  OK_CODE,
 } = require('../constants');
+const {
+  BadRequestError,
+  DefaultError,
+  NotFoundError,
+} = require('../errors');
 
-const getCards = async (req, res) => {
+const getCards = async (req, res, next) => {
   try {
     const result = await Card.find().populate(['owner likes']);
     res.status(OK_CODE).json(result);
   } catch (error) {
-    res.status(DEFAULT_ERROR_CODE).json({ error });
+    next(new BadRequestError('Unknown error'));
   }
 };
 
-const createCard = async (req, res) => {
+const createCard = async (req, res, next) => {
   try {
     const { body, user } = req;
     const { name, link } = body;
@@ -21,32 +26,34 @@ const createCard = async (req, res) => {
     res.status(OK_CODE).json(newCard);
   } catch (error) {
     if (error.name === 'ValidationError') {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'name or link are not valid' });
+      next(new BadRequestError('Name or link are not valid'));
     } else {
-      res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+      next(new DefaultError('Unknown error'));
     }
   }
 };
 
-const deleteCard = async (req, res) => {
+const deleteCard = async (req, res, next) => {
   try {
     const { cardId } = req.params;
-    const result = await Card.findByIdAndDelete({ _id: cardId });
+
+    const { user } = req;
+    const result = await Card.findByIdAndDelete({ _id: cardId, owner: user._id });
     if (result === null) {
-      res.status(NOT_FOUND_ERROR_CODE).json({ message: 'card not found' });
+      throw new NotFoundError('user not found');
     } else {
       res.status(OK_CODE).json(result);
     }
   } catch (error) {
     if (error.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not valid' });
+      next(new BadRequestError('Card id is not valid'));
     } else {
-      res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+      next(new DefaultError('Unknown error'));
     }
   }
 };
 
-const createLike = async (req, res) => {
+const createLike = async (req, res, next) => {
   try {
     const { cardId } = req.params;
     const result = await Card.findByIdAndUpdate(
@@ -55,20 +62,20 @@ const createLike = async (req, res) => {
       { new: true },
     );
     if (result === null) {
-      res.status(NOT_FOUND_ERROR_CODE).json({ message: 'card not found' });
+      throw new NotFoundError('card not found');
     } else {
       res.status(OK_CODE).json(result);
     }
   } catch (error) {
     if (error.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
+      next(new BadRequestError('card id is not vallid'));
     } else {
-      res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+      next(new DefaultError('Unknown error'));
     }
   }
 };
 
-const deleteLike = async (req, res) => {
+const deleteLike = async (req, res, next) => {
   try {
     const { cardId } = req.params;
     if (cardId) {
@@ -78,18 +85,18 @@ const deleteLike = async (req, res) => {
         { new: true },
       );
       if (result === null) {
-        res.status(NOT_FOUND_ERROR_CODE).json({ message: 'card not found' });
+        throw new NotFoundError('card not found');
       } else {
         res.status(OK_CODE).json(result);
       }
     } else {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
+      throw new BadRequestError('card id is not vallid');
     }
   } catch (error) {
     if (error.name === 'CastError') {
-      res.status(BAD_REQUEST_ERROR_CODE).json({ message: 'card id is not vallid' });
+      next(new BadRequestError('card id is not vallid'));
     } else {
-      res.status(DEFAULT_ERROR_CODE).json({ message: 'Unknown error' });
+      next(new DefaultError('card id is not vallid'));
     }
   }
 };
