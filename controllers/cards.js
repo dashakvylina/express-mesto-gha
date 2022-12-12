@@ -39,12 +39,12 @@ const deleteCard = async (req, res, next) => {
     const { cardId } = req.params;
 
     const { user } = req;
-    const result = await Card.findOneAndRemove({ _id: cardId, owner: user._id });
+    const result = await Card.findOne({ _id: cardId });
     if (result === null) {
+      throw new NotFoundError('Card not found');
+    } else if (result.owner._id !== user._id) {
       throw new ForbiddenError('Card not found');
-    } else {
-      res.status(OK_CODE).json(result);
-    }
+    } else { res.status(OK_CODE).json(result); }
   } catch (error) {
     if (error.name === 'CastError') {
       next(new BadRequestError('Card id is not valid'));
