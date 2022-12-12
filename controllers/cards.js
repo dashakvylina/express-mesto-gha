@@ -40,7 +40,7 @@ const deleteCard = async (req, res, next) => {
     const { user } = req;
     const result = await Card.findByIdAndDelete({ _id: cardId, owner: user._id });
     if (result === null) {
-      throw new NotFoundError('user not found');
+      throw new NotFoundError('Card not found');
     } else {
       res.status(OK_CODE).json(result);
     }

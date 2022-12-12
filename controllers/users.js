@@ -40,16 +40,20 @@ const getMe = async (req, res, next) => {
 const createUser = async (req, res, next) => {
   try {
     const { body } = req;
-    const { email, password } = body;
-    const hash = await bcrypt.hash(password, 10);
-    const newUser = new User({ email, password: hash });
+    const { email, name, about, avatar } = body;
+    const hash = await bcrypt.hash(body.password, 10);
+    const newUser = new User({ email, password: hash, name, about, avatar });
     await newUser.save();
-    res.status(OK_CODE).json(newUser);
+
+    const { password, ...data } = newUser._doc;
+    res.status(OK_CODE).json(data);
   } catch (error) {
     if (error.code === 11000) {
       next(new ConflictError('Email exists'));
     }
     if (error.name === 'ValidationError') {
+      console.log('err', error);
+
       next(new BadRequestError('Email or password are not vallid'));
     } else {
       next(new DefaultError('Unknown error'));
@@ -81,6 +85,26 @@ const updateUser = async (req, res, next) => {
   }
 };
 
+const getUserById = async (req, res, next) => {
+  try {
+    const { userId } = req.params;
+
+    const result = await User.findById({ _id: userId });
+    if (result === null) {
+      throw new NotFoundError('user not found');
+    } else {
+      res.status(OK_CODE).json(result);
+    }
+  } catch (error) {
+
+    if (error.name === 'CastError') {
+      next(new BadRequestError('User id is not valid'));
+    } else {
+      next(new DefaultError('Unknown error1'));
+    }
+  }
+};
+
 const updateAvatar = async (req, res, next) => {
   try {
     const { avatar } = req.body;
@@ -97,9 +121,8 @@ const updateAvatar = async (req, res, next) => {
       res.status(200).json(result);
     }
   } catch (error) {
-    console.log('error', error);
     if (error.name === 'ValidationError') {
-      next(new BadRequestError(('Name or about are not vallid')));
+      next(new BadRequestError(('Avatar is  not vallid')));
     } else if (error.name === 'CastError') {
       next(new BadRequestError(('Invalid id')));
     } else {
@@ -122,5 +145,5 @@ const login = (req, res, next) => {
 };
 
 module.exports = {
-  getUsers, getMe, createUser, updateUser, updateAvatar, login,
+  getUsers, getMe, createUser, updateUser, updateAvatar, login, getUserById
 };

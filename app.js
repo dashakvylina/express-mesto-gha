@@ -24,19 +24,25 @@ app.post('/signup', celebrate({
   body: Joi.object().keys({
     password: Joi.string().required(),
     email: Joi.string().email().required(),
+    name: Joi.string().min(2).max(30),
+    about: Joi.string().min(2).max(30),
+    avatar: Joi.string().regex(/[a-z\-_0-9\/\:\.]*\.(jpg|jpeg|png|gif|bmp|svg|webp)/i)
   }),
 }), createUser);
+
 app.post('/signin', celebrate({
   body: Joi.object().keys({
     password: Joi.string().required(),
     email: Joi.string().email().required(),
   }),
 }), login);
-app.use(celebrate({
-  [Segments.HEADERS]: Joi.object({
-    authorization: Joi.string().required().regex(/Bearer\s[a-z0-9._-]*/i),
-  }).unknown(),
-}));
+
+// app.use(celebrate({
+//   [Segments.HEADERS]: Joi.object({
+//     authorization: Joi.string().required().regex(/Bearer\s[a-z0-9._-]*/i),
+//   }).unknown(),
+// }));
+
 app.use('/', auth, CardRouter);
 app.use('/', auth, UserRouter);
 
