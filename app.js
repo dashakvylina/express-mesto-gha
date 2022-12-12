@@ -44,12 +44,12 @@ app.post('/signin', celebrate({
 //   }).unknown(),
 // }));
 
+app.use('/', auth, CardRouter);
+app.use('/', auth, UserRouter);
+
 app.use((req, res, next) => {
   next(new NotFoundError('Такой страницы не существует!'))
 });
-
-app.use('/', auth, CardRouter);
-app.use('/', auth, UserRouter);
 
 app.use(errors());
 
