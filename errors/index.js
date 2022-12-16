@@ -11,5 +11,5 @@ module.exports = {
   NotFoundError,
   UnauthorizedError,
   ConflictError,
-  ForbiddenError
+  ForbiddenError,
 };

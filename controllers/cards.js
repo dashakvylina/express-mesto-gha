@@ -6,7 +6,7 @@ const {
   BadRequestError,
   DefaultError,
   NotFoundError,
-  ForbiddenError
+  ForbiddenError,
 } = require('../errors');
 
 const getCards = async (req, res, next) => {
@@ -14,7 +14,7 @@ const getCards = async (req, res, next) => {
     const result = await Card.find().populate(['owner likes']);
     res.status(OK_CODE).json(result);
   } catch (error) {
-    next(new BadRequestError('Unknown error'));
+    next(new DefaultError('Unknown error'));
   }
 };
 
@@ -37,14 +37,16 @@ const createCard = async (req, res, next) => {
 const deleteCard = async (req, res, next) => {
   try {
     const { cardId } = req.params;
-
     const { user } = req;
     const result = await Card.findOne({ _id: cardId });
     if (result === null) {
       throw new NotFoundError('Card not found');
-    } else if (result.owner._id !== user._id) {
-      throw new ForbiddenError('Card not found');
-    } else { res.status(OK_CODE).json(result); }
+    } else if (!result.owner.equals(user._id)) {
+      throw new ForbiddenError('only author can delete a card');
+    } else {
+      const remRes = await result.remove();
+      res.status(OK_CODE).json(remRes);
+    }
   } catch (error) {
     if (error.name === 'CastError') {
       next(new BadRequestError('Card id is not valid'));
@@ -79,19 +81,16 @@ const createLike = async (req, res, next) => {
 const deleteLike = async (req, res, next) => {
   try {
     const { cardId } = req.params;
-    if (cardId) {
-      const result = await Card.findByIdAndUpdate(
-        cardId,
-        { $pull: { likes: req.user._id } },
-        { new: true },
-      );
-      if (result === null) {
-        throw new NotFoundError('card not found');
-      } else {
-        res.status(OK_CODE).json(result);
-      }
+
+    const result = await Card.findByIdAndUpdate(
+      cardId,
+      { $pull: { likes: req.user._id } },
+      { new: true },
+    );
+    if (result === null) {
+      throw new NotFoundError('card not found');
     } else {
-      throw new BadRequestError('card id is not vallid');
+      res.status(OK_CODE).json(result);
     }
   } catch (error) {
     if (error.name === 'CastError') {

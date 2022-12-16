@@ -5,17 +5,12 @@
       "error",
       {
         "allow": [
-          "_id"
+          "_id",
+          "_doc"
         ]
       }
     ],
     "no-console": "off",
-    "func-names": "off",
-    "no-unused-vars": [
-      "error",
-      {
-        "allow": "next"
-      }
-    ]
+    "func-names": "off"
   }
 }

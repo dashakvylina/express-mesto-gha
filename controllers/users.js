@@ -40,9 +40,13 @@ const getMe = async (req, res, next) => {
 const createUser = async (req, res, next) => {
   try {
     const { body } = req;
-    const { email, name, about, avatar } = body;
+    const {
+      email, name, about,
+    } = body;
     const hash = await bcrypt.hash(body.password, 10);
-    const newUser = new User({ email, password: hash, name, about, avatar });
+    const newUser = new User({
+      email, password: hash, name, about,
+    });
     await newUser.save();
 
     const { password, ...data } = newUser._doc;
@@ -50,10 +54,7 @@ const createUser = async (req, res, next) => {
   } catch (error) {
     if (error.code === 11000) {
       next(new ConflictError('Email exists'));
-    }
-    if (error.name === 'ValidationError') {
-      console.log('err', error);
-
+    } else if (error.name === 'ValidationError') {
       next(new BadRequestError('Email or password are not vallid'));
     } else {
       next(new DefaultError('Unknown error'));
@@ -72,10 +73,9 @@ const updateUser = async (req, res, next) => {
     if (result === null) {
       throw new NotFoundError('user not found');
     } else {
-      res.status(200).json(result);
+      res.status(OK_CODE).json(result);
     }
   } catch (error) {
-
     if (error.name === 'ValidationError') {
       next(new BadRequestError(('Name or about are not vallid')));
     } else if (error.name === 'CastError') {
@@ -97,7 +97,6 @@ const getUserById = async (req, res, next) => {
       res.status(OK_CODE).json(result);
     }
   } catch (error) {
-
     if (error.name === 'CastError') {
       next(new BadRequestError('User id is not valid'));
     } else {
@@ -146,5 +145,5 @@ const login = (req, res, next) => {
 };
 
 module.exports = {
-  getUsers, getMe, createUser, updateUser, updateAvatar, login, getUserById
+  getUsers, getMe, createUser, updateUser, updateAvatar, login, getUserById,
 };
