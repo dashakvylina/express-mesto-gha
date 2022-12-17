@@ -32,7 +32,7 @@ const getMe = async (req, res, next) => {
     if (error.name === 'CastError') {
       next(new BadRequestError('Unknown error'));
     } else {
-      next(new DefaultError('Unknown error'));
+      next(error);
     }
   }
 };
@@ -41,11 +41,11 @@ const createUser = async (req, res, next) => {
   try {
     const { body } = req;
     const {
-      email, name, about,
+      email, name, about, avatar,
     } = body;
     const hash = await bcrypt.hash(body.password, 10);
     const newUser = new User({
-      email, password: hash, name, about,
+      email, password: hash, name, about, avatar,
     });
     await newUser.save();
 

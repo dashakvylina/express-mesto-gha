@@ -29,7 +29,7 @@ const createCard = async (req, res, next) => {
     if (error.name === 'ValidationError') {
       next(new BadRequestError('Name or link are not valid'));
     } else {
-      next(new DefaultError('Unknown error'));
+      next(error);
     }
   }
 };
@@ -73,7 +73,7 @@ const createLike = async (req, res, next) => {
     if (error.name === 'CastError') {
       next(new BadRequestError('card id is not vallid'));
     } else {
-      next(new DefaultError('Unknown error'));
+      next(error);
     }
   }
 };
@@ -96,7 +96,7 @@ const deleteLike = async (req, res, next) => {
     if (error.name === 'CastError') {
       next(new BadRequestError('card id is not vallid'));
     } else {
-      next(new DefaultError('card id is not vallid'));
+      next(error);
     }
   }
 };
